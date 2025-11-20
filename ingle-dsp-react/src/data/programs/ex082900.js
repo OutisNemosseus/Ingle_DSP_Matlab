@@ -1,0 +1,29 @@
+// Chapter 8: Example 8.29
+// Chapter 8: Example 8.29
+
+const ex082900 = {
+  "id": "ex082900",
+  "title": "ex082900",
+  "displayName": "Chapter 8: Example 8.29",
+  "description": "Chapter 8: Example 8.29",
+  "category": "DSP - Chapter 08",
+  "chapter": "08",
+  "source": "matlab",
+  "pythonCode": "#!/usr/bin/env python3\n# Title: Chapter 8: Example 8.29\n# Chapter: 08\n# Source: Ingle DSP MATLAB Programs\n\nimport matplotlib.pyplot as plt\nimport numpy as np\nimport io\nimport base64\n\n# Chapter 8: Example 8.29\r\n\r\n# Elliptic Bandpass Filter Design:\r\n\r\n# Use of the ELLIP function\r\n\r\n# # Digital Filter Specifications:        # Type: Elliptic Bandpass\r\n\r\nws = [0.3*np.pi 0.75*np.pi];                  # Dig. stopband edge frequency\r\n\r\nwp = [0.4*np.pi 0.6*np.pi];                   # Dig. passband edge frequency\r\n\r\nRp = 1;\t                                # Passband ripple in dB\r\n\r\nAs = 40;                                # Stopband attenuation in dB\r\n\r\nRipple = 10 ** (-Rp/20);                 # Passband ripple\r\n\r\nAttn = 10 ** (-As/20);                   # Passband attenuation\r\n\r\n\r\n\r\n# Calculations of Elliptic Filter Parameters:\r\n\r\n[N,wn] = ellipord(wp/np.pi,ws/np.pi,Rp,As)\n# Digital Elliptic Bandpass Filter Design:\r\n\r\n[b,a] = ellip(N,Rp,As,wn)\n# Cascade Form Realization:\r\n\r\n[b0,B,A] = dir2cas(b,a)\r\n\r\n# # b0 = 0.0197\r\n\r\n# # B = 1.0000    1.5066    1.0000\r\n\r\n# # 1.0000    0.9268    1.0000\r\n\r\n# # 1.0000   -0.9268    1.0000\r\n\r\n# # 1.0000   -1.5066    1.0000\r\n\r\n# # A = 1.0000    0.5963    0.9399\r\n\r\n# # 1.0000    0.2774    0.7929\r\n\r\n# # 1.0000   -0.2774    0.7929\r\n\r\n# # 1.0000   -0.5963    0.9399\r\n\r\n\r\n\r\n# Plotting:\r\n\r\nfig = plt.figure(1)\n plt.subplot(1, 1, 1)\n[db,mag,pha,grd,w] = freqz_m(b,a)\nplt.subplot(2, 2, 1)\nplt.plt.plt.plot(w/np.pi,mag)\ngrid;plt.title('Magnitude Response')\nplt.xlabel('frequency in np.pi units')\n plt.xlim(0,, 1,)\nplt.ylim(0,, 1)\nset(gca,'XTickMode','manual','XTick',[0;0.3;0.4;0.6;0.75;1])\r\n\r\nset(gca,'YTickMode','manual','YTick',[0,Ripple,1])\nplt.subplot(2, 2, 3)\nplt.plt.plt.plot(w/np.pi,db)\ngrid;plt.title('Magnitude in dB')\nplt.xlabel('frequency in np.pi units')\n plt.xlim(0, 1)\nplt.ylim(-50, 0)\nset(gca,'XTickMode','manual','XTick',[0;0.3;0.4;0.6;0.75;1])\r\n\r\nset(gca,'YTickMode','manual','YTick',[-40;0])\r\n\r\nset(gca,'YTickLabelMode','manual','YTickLabels',['40';' 0'])\r\n\r\nplt.subplot(2, 2, 2)\nplt.plt.plt.plot(w/np.pi,pha/np.pi)\ngrid;plt.title('Phase Response')\nplt.xlabel('frequency in np.pi units')\nplt.ylabel('phase in np.pi units')\nset(gca,'XTickMode','manual','XTick',[0;0.3;0.4;0.6;0.75;1])\r\n\r\nplt.subplot(2, 2, 4)\nplt.plt.plt.plot(w/np.pi,grd)\ngrid;plt.title('Group Delay')\nplt.xlabel('frequency in np.pi units')\n plt.ylabel('samples')\nset(gca,'XTickMode','manual','XTick',[0;0.3;0.4;0.6;0.75;1])\r\n\r\n\n# Save plot to base64\nbuf = io.BytesIO()\nplt.tight_layout()\nplt.savefig(buf, format='png', dpi=100, bbox_inches='tight')\nbuf.seek(0)\nimg_base64 = base64.b64encode(buf.read()).decode('utf-8')\nplt.close()\nprint(f\"data:image/png;base64,{img_base64}\")\n",
+  "matlabCode": "% Chapter 8: Example 8.29\r\n\r\n%            Elliptic Bandpass Filter Design:\r\n\r\n%                Use of the ELLIP function\r\n\r\n%\r\n\r\n% Digital Filter Specifications:        % Type: Elliptic Bandpass\r\n\r\nws = [0.3*pi 0.75*pi];                  % Dig. stopband edge frequency\r\n\r\nwp = [0.4*pi 0.6*pi];                   % Dig. passband edge frequency\r\n\r\nRp = 1;\t                                % Passband ripple in dB\r\n\r\nAs = 40;                                % Stopband attenuation in dB\r\n\r\nRipple = 10 ^ (-Rp/20);                 % Passband ripple\r\n\r\nAttn = 10 ^ (-As/20);                   % Passband attenuation\r\n\r\n\r\n\r\n% Calculations of Elliptic Filter Parameters:\r\n\r\n[N,wn] = ellipord(wp/pi,ws/pi,Rp,As);\r\n\r\n\r\n\r\n% Digital Elliptic Bandpass Filter Design:\r\n\r\n[b,a] = ellip(N,Rp,As,wn);\r\n\r\n\r\n\r\n% Cascade Form Realization:\r\n\r\n[b0,B,A] = dir2cas(b,a)\r\n\r\n%%b0 = 0.0197\r\n\r\n%%B = 1.0000    1.5066    1.0000\r\n\r\n%%    1.0000    0.9268    1.0000\r\n\r\n%%    1.0000   -0.9268    1.0000\r\n\r\n%%    1.0000   -1.5066    1.0000\r\n\r\n%%A = 1.0000    0.5963    0.9399\r\n\r\n%%    1.0000    0.2774    0.7929\r\n\r\n%%    1.0000   -0.2774    0.7929\r\n\r\n%%    1.0000   -0.5963    0.9399\r\n\r\n\r\n\r\n% Plotting:\r\n\r\nfigure(1); subplot(1,1,1)\r\n\r\n[db,mag,pha,grd,w] = freqz_m(b,a);\r\n\r\nsubplot(2,2,1);plot(w/pi,mag);grid;title('Magnitude Response')\r\n\r\nxlabel('frequency in pi units'); axis([0, 1, 0, 1])\r\n\r\nset(gca,'XTickMode','manual','XTick',[0;0.3;0.4;0.6;0.75;1])\r\n\r\nset(gca,'YTickMode','manual','YTick',[0,Ripple,1]);\r\n\r\nsubplot(2,2,3);plot(w/pi,db);grid;title('Magnitude in dB')\r\n\r\nxlabel('frequency in pi units'); axis([0 1 -50 0]);\r\n\r\nset(gca,'XTickMode','manual','XTick',[0;0.3;0.4;0.6;0.75;1])\r\n\r\nset(gca,'YTickMode','manual','YTick',[-40;0])\r\n\r\nset(gca,'YTickLabelMode','manual','YTickLabels',['40';' 0'])\r\n\r\nsubplot(2,2,2);plot(w/pi,pha/pi);grid;title('Phase Response')\r\n\r\nxlabel('frequency in pi units');ylabel('phase in pi units') \r\n\r\nset(gca,'XTickMode','manual','XTick',[0;0.3;0.4;0.6;0.75;1])\r\n\r\nsubplot(2,2,4);plot(w/pi,grd);grid;title('Group Delay')\r\n\r\nxlabel('frequency in pi units'); ylabel('samples')\r\n\r\nset(gca,'XTickMode','manual','XTick',[0;0.3;0.4;0.6;0.75;1])\r\n\r\n",
+  "defaultParams": {},
+  "params": [],
+  "tags": [
+    "chapter08",
+    "dsp",
+    "ex082900"
+  ],
+  "wikipediaLinks": [
+    {
+      "title": "Digital signal processing",
+      "url": "https://en.wikipedia.org/wiki/Digital_signal_processing"
+    }
+  ]
+};
+
+export default ex082900;

@@ -1,0 +1,35 @@
+.text-output {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.text-output-header {
+  background: #2c3e50;
+  color: white;
+  padding: 12px 15px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.text-output-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.text-output-content {
+  margin: 0;
+  padding: 15px;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+}
