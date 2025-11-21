@@ -1,11 +1,9 @@
 services:
   - type: web
     name: ingle-dsp-react
-    runtime: node
-    plan: free
-    rootDir: ingle-dsp-react
-    buildCommand: npm install && npm run build:prod
-    staticPublishPath: ./dist
+    env: static
+    buildCommand: cd ingle-dsp-react && npm install && npm run build:prod
+    staticPublishPath: ingle-dsp-react/dist
     routes:
       - type: rewrite
         source: /*
