@@ -107,18 +107,20 @@ function ProgramPage({ pyodide }) {
         {program.description && <p className="subtitle">{program.description}</p>}
       </div>
       <IDELayout pyodide={pyodide} program={program} />
-      <div className="cusdis-wrapper">
-        <ReactCusdis
-          lang="zh-cn"
-          attrs={{
-            appId: 'ed2e19cc-6950-40bd-89ec-89c8b5f7f07f',
-            host: 'https://cusdis.com',
-            pageId: programId,
-            pageUrl: window.location.href,
-            pageTitle: program.displayName || program.title
-          }}
-        />
-      </div>
+      {pyodide && (
+        <div className="cusdis-wrapper">
+          <ReactCusdis
+            lang="zh-cn"
+            attrs={{
+              appId: 'ed2e19cc-6950-40bd-89ec-89c8b5f7f07f',
+              host: 'https://cusdis.com',
+              pageId: programId,
+              pageUrl: window.location.href,
+              pageTitle: program.displayName || program.title
+            }}
+          />
+        </div>
+      )}
     </div>
   )
 }
