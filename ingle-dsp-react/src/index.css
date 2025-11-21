@@ -60,7 +60,7 @@ code {
 .cusdis-wrapper {
   margin-top: 40px;
   padding: 20px;
-  max-width: 900px;   /* 评论区最大宽度，可以根据需要调整 */
+  max-width: 1200px;   /* 评论区最大宽度，更宽可以看到更多内容 */
   margin-left: auto;
   margin-right: auto;
 }
@@ -68,6 +68,6 @@ code {
 /* 控制 iframe 的外壳尺寸 */
 .cusdis-wrapper iframe {
   width: 100%;
-  min-height: 450px;  /* 最小高度，评论区太矮就拉高这个值 */
+  min-height: 800px;  /* 大幅增加高度，可以看到多个评论 */
   border: none;
 }
