@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, useParams, Link, Navigate } from 'react-router-dom'
+import { ReactCusdis } from 'react-cusdis'
 import ProgramList from './components/ProgramList'
 import IDELayout from './components/IDELayout'
 import programs from './data/index.js'
@@ -106,6 +107,16 @@ function ProgramPage({ pyodide }) {
         {program.description && <p className="subtitle">{program.description}</p>}
       </div>
       <IDELayout pyodide={pyodide} program={program} />
+      <div style={{ marginTop: '40px', padding: '20px' }}>
+        <ReactCusdis
+          lang="zh-cn"
+          attrs={{
+            appId: 'ed2e19cc-6950-40bd-89ec-89c8b5f7f07f',
+            host: 'https://cusdis.com',
+            pageId: programId
+          }}
+        />
+      </div>
     </div>
   )
 }
