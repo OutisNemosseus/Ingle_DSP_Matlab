@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:prod": "npm run generate && npm run build",
     "preview": "vite preview",
     "generate": "node scripts/generate-pages.js",
     "generate:watch": "node scripts/watch-python.js",
