@@ -50,59 +50,74 @@ function IDELayout({ pyodide, program }) {
     setTextOutput('')
 
     try {
-      let codeToRun = activeTab === 'compiler' ? compilerCode : pythonCode
+      let codeToRun = compilerCode
 
-      Object.keys(params).forEach(key => {
-        const v = params[key]
-        const pattern = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
-        codeToRun = codeToRun.replace(pattern, typeof v === 'string' ? `"${v}"` : v)
-      })
+      // 如果之后要加参数替换，可以在这里恢复：
+      // Object.keys(params).forEach(key => {
+      //   const v = params[key]
+      //   const pattern = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
+      //   codeToRun = codeToRun.replace(
+      //     pattern,
+      //     typeof v === 'string' ? `"${v}"` : v
+      //   )
+      // })
 
+      // ⭐ 包一层 Python，用 StringIO 抓 stdout
       const wrappedCode = `
 import sys, io, traceback
+
 _stdout_buffer = io.StringIO()
+_stdout_backup = sys.stdout
 sys.stdout = _stdout_buffer
 
 try:
-${codeToRun.split("\n").map(line => "    " + line).join("\n")}
+${codeToRun.split('\n').map(line => '    ' + line).join('\n')}
 except Exception:
     traceback.print_exc()
+finally:
+    sys.stdout = _stdout_backup
 
-sys.stdout = sys.__stdout__
-_stdout_buffer.getvalue()
+_stdout = _stdout_buffer.getvalue()
+_stdout
 `
 
-      console.log('[Run] runPythonAsync start')
-      const result = await Promise.race([
-        pyodide.runPythonAsync(wrappedCode),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Python execution timeout")), 8000))
-      ])
+      console.log('[Run] runPython sync start (wrapped), length =', wrappedCode.length)
 
-      console.log('[Run] runPythonAsync resolved')
+      const result = pyodide.runPython(wrappedCode)
+      console.log('[Run] runPython sync returned (raw):', result)
 
-      const text = result || ''
-
-      // Check if output contains plot data
-      let plotDataResult = null
-      let cleanText = text
-
-      if (text && text.includes('data:image/png;base64,')) {
-        const match = text.match(/data:image\/png;base64,([A-Za-z0-9+/=]+)/)
-        if (match) {
-          plotDataResult = match[1]
-          cleanText = text.replace(/data:image\/png;base64,[A-Za-z0-9+/=]+/, '').trim()
-          console.log('[Run] found plot data')
-        }
+      // 取出 stdout 文本（可能是 PyProxy，也可能是直接 string）
+      let stdout = ''
+      if (result && typeof result.toJs === 'function') {
+        const jsVal = result.toJs()
+        result.destroy && result.destroy()
+        stdout = String(jsVal ?? '')
+      } else {
+        stdout = String(result ?? '')
       }
 
-      if (plotDataResult) {
-        setPlotData(plotDataResult)
+      console.log('[Run] captured stdout length =', stdout.length)
+      console.log('[Run] stdout content (first 200 chars):', stdout.substring(0, 200))
+
+      // 从 stdout 里找 data:image/png;base64,...
+      let imgB64 = null
+      const match = stdout.match(/data:image\/png;base64,([A-Za-z0-9+/=]+)/)
+      if (match) {
+        imgB64 = match[1]              // 纯 base64
+        stdout = stdout.replace(match[0], '').trim()  // 把整段 data URL 从文本里删掉
+        console.log('[Run] extracted plot base64 length =', imgB64.length)
+      } else {
+        console.log('[Run] no plot data found in stdout')
       }
 
-      setTextOutput(cleanText || 'Code executed successfully (no output)')
+      if (imgB64) {
+        setPlotData(imgB64)
+      }
+
+      setTextOutput(stdout || 'Code executed (no output)')
 
     } catch (err) {
-      console.error('[Run] error:', err)
+      console.error('[Run] error in wrapped run:', err)
       setError(err.toString())
     } finally {
       console.log('[Run] finally: setIsRunning(false)')
