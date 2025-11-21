@@ -37,8 +37,12 @@ function IDELayout({ pyodide, program }) {
   }
 
   const runCode = async () => {
+    console.log('[Run] clicked')
+
+    // ⚠️ 提前检查在 setIsRunning(true) 之前做
     if (!pyodide) {
-      setError('Python environment not ready')
+      console.warn('[Run] pyodide not ready, skip run')
+      setError('Pyodide 还没初始化好，请稍候再试')
       return
     }
 
@@ -50,6 +54,7 @@ function IDELayout({ pyodide, program }) {
     try {
       // Determine which code to run based on active tab
       let codeToRun = activeTab === 'compiler' ? compilerCode : pythonCode
+      console.log('[Run] activeTab =', activeTab, ', code length =', codeToRun.length)
 
       // Replace parameters in code
       Object.keys(params).forEach(key => {
@@ -82,7 +87,9 @@ finally:
 output
 `
 
+      console.log('[Run] start runPythonAsync')
       const result = await pyodide.runPythonAsync(wrappedCode)
+      console.log('[Run] runPythonAsync resolved, result length =', result ? result.length : 0)
 
       let outText = result || ''
       let plotDataResult = null
@@ -93,6 +100,7 @@ output
         if (match) {
           plotDataResult = match[1]
           outText = outText.replace(/data:image\/png;base64,[A-Za-z0-9+/=]+/, '').trim()
+          console.log('[Run] found plot data')
         }
       }
 
@@ -101,11 +109,13 @@ output
       }
 
       setTextOutput(outText || 'Code executed successfully (no output)')
+      console.log('[Run] execution completed successfully')
 
     } catch (err) {
+      console.error('[Run] error:', err)
       setError(err.message || String(err))
-      console.error('Execution error:', err)
     } finally {
+      console.log('[Run] finally: setIsRunning(false)')
       setIsRunning(false)
     }
   }

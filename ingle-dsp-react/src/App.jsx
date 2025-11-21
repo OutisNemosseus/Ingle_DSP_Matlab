@@ -12,22 +12,51 @@ function App() {
   const [loadingStatus, setLoadingStatus] = useState('Loading Python environment...')
 
   useEffect(() => {
+    let cancelled = false
+
     async function initPyodide() {
+      console.log('[Init] start')
       try {
         setLoadingStatus('Loading Pyodide... (First load may be slow, subsequent loads will be cached)')
+
+        // Check if script already exists
+        const existingScript = document.querySelector('script[src*="pyodide.js"]')
+        if (existingScript) {
+          console.log('[Init] pyodide script already exists, removing')
+          existingScript.remove()
+        }
 
         const script = document.createElement('script')
         script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js'
         script.async = true
 
         script.onload = async () => {
+          if (cancelled) {
+            console.log('[Init] cancelled during script load')
+            return
+          }
+
           try {
+            console.log('[Init] script loaded, initializing pyodide')
             const pyodideInstance = await window.loadPyodide({
               indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.1/full/'
             })
 
+            if (cancelled) {
+              console.log('[Init] cancelled after loadPyodide')
+              return
+            }
+
+            console.log('[Init] pyodide loaded, version:', pyodideInstance.version)
+
             setLoadingStatus('📦 Loading NumPy and Matplotlib...')
             await pyodideInstance.loadPackage(['numpy', 'matplotlib'])
+            console.log('[Init] packages loaded')
+
+            if (cancelled) {
+              console.log('[Init] cancelled after loadPackage')
+              return
+            }
 
             setLoadingStatus('🔧 Initializing Python environment...')
             await pyodideInstance.runPythonAsync(`
@@ -37,29 +66,43 @@ import matplotlib.pyplot as plt
 import numpy as np
 import io
 import base64
+print("Python environment initialized")
             `)
+            console.log('[Init] Python environment initialized')
+
+            if (cancelled) {
+              console.log('[Init] cancelled after Python init')
+              return
+            }
 
             setPyodide(pyodideInstance)
             setLoading(false)
             setLoadingStatus('✅ Ready!')
+            console.log('[Init] complete')
           } catch (error) {
-            console.error('Error initializing Pyodide:', error)
+            console.error('[Init] error during initialization:', error)
             setLoadingStatus('❌ Failed to initialize: ' + error.message)
           }
         }
 
         script.onerror = () => {
+          console.error('[Init] failed to load pyodide script')
           setLoadingStatus('❌ Failed to load Pyodide script')
         }
 
-        document.body.appendChild(script)
+        document.head.appendChild(script)
       } catch (error) {
-        console.error('Error in initPyodide:', error)
+        console.error('[Init] error in initPyodide:', error)
         setLoadingStatus('❌ Error: ' + error.message)
       }
     }
 
     initPyodide()
+
+    return () => {
+      console.log('[Init] cleanup')
+      cancelled = true
+    }
   }, [])
 
   if (loading) {
