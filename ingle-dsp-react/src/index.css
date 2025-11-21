@@ -55,3 +55,19 @@ code {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* Cusdis 评论区样式 */
+.cusdis-wrapper {
+  margin-top: 40px;
+  padding: 20px;
+  max-width: 900px;   /* 评论区最大宽度，可以根据需要调整 */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 控制 iframe 的外壳尺寸 */
+.cusdis-wrapper iframe {
+  width: 100%;
+  min-height: 450px;  /* 最小高度，评论区太矮就拉高这个值 */
+  border: none;
+}
