@@ -39,10 +39,8 @@ function IDELayout({ pyodide, program }) {
   const runCode = async () => {
     console.log('[Run] clicked')
 
-    // ⚠️ 提前检查在 setIsRunning(true) 之前做
     if (!pyodide) {
-      console.warn('[Run] pyodide not ready, skip run')
-      setError('Pyodide 还没初始化好，请稍候再试')
+      setError('Pyodide not ready')
       return
     }
 
@@ -52,54 +50,47 @@ function IDELayout({ pyodide, program }) {
     setTextOutput('')
 
     try {
-      // Determine which code to run based on active tab
       let codeToRun = activeTab === 'compiler' ? compilerCode : pythonCode
-      console.log('[Run] activeTab =', activeTab, ', code length =', codeToRun.length)
 
-      // Replace parameters in code
       Object.keys(params).forEach(key => {
-        const value = params[key]
-        if (typeof value === 'string') {
-          codeToRun = codeToRun.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), `"${value}"`)
-        } else {
-          codeToRun = codeToRun.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value)
-        }
+        const v = params[key]
+        const pattern = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
+        codeToRun = codeToRun.replace(pattern, typeof v === 'string' ? `"${v}"` : v)
       })
 
-      // Wrap code to capture output
       const wrappedCode = `
-import sys
-import io
-
-# Redirect stdout
-old_stdout = sys.stdout
-sys.stdout = io.StringIO()
+import sys, io, traceback
+_stdout_buffer = io.StringIO()
+sys.stdout = _stdout_buffer
 
 try:
-${codeToRun.split('\n').map(line => '    ' + line).join('\n')}
-except Exception as e:
-    print(f"Error: {e}")
-    import traceback
+${codeToRun.split("\n").map(line => "    " + line).join("\n")}
+except Exception:
     traceback.print_exc()
-finally:
-    output = sys.stdout.getvalue()
-    sys.stdout = old_stdout
-output
+
+sys.stdout = sys.__stdout__
+_stdout_buffer.getvalue()
 `
 
-      console.log('[Run] start runPythonAsync')
-      const result = await pyodide.runPythonAsync(wrappedCode)
-      console.log('[Run] runPythonAsync resolved, result length =', result ? result.length : 0)
+      console.log('[Run] runPythonAsync start')
+      const result = await Promise.race([
+        pyodide.runPythonAsync(wrappedCode),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Python execution timeout")), 8000))
+      ])
 
-      let outText = result || ''
-      let plotDataResult = null
+      console.log('[Run] runPythonAsync resolved')
+
+      const text = result || ''
 
       // Check if output contains plot data
-      if (outText && outText.includes('data:image/png;base64,')) {
-        const match = outText.match(/data:image\/png;base64,([A-Za-z0-9+/=]+)/)
+      let plotDataResult = null
+      let cleanText = text
+
+      if (text && text.includes('data:image/png;base64,')) {
+        const match = text.match(/data:image\/png;base64,([A-Za-z0-9+/=]+)/)
         if (match) {
           plotDataResult = match[1]
-          outText = outText.replace(/data:image\/png;base64,[A-Za-z0-9+/=]+/, '').trim()
+          cleanText = text.replace(/data:image\/png;base64,[A-Za-z0-9+/=]+/, '').trim()
           console.log('[Run] found plot data')
         }
       }
@@ -108,12 +99,11 @@ output
         setPlotData(plotDataResult)
       }
 
-      setTextOutput(outText || 'Code executed successfully (no output)')
-      console.log('[Run] execution completed successfully')
+      setTextOutput(cleanText || 'Code executed successfully (no output)')
 
     } catch (err) {
       console.error('[Run] error:', err)
-      setError(err.message || String(err))
+      setError(err.toString())
     } finally {
       console.log('[Run] finally: setIsRunning(false)')
       setIsRunning(false)
